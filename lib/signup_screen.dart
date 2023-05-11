@@ -24,6 +24,7 @@ class InitState extends State<SignUpScreen> {
   bool isLoading = false;
   SharedPreferences? logindata;
   late bool newUser;
+  bool isPasswordVisible = false;
 
   void initState() {
     super.initState();
@@ -45,54 +46,45 @@ class InitState extends State<SignUpScreen> {
   TextEditingController stateController = TextEditingController();
   TextEditingController postalCodeController = TextEditingController();
 
-  void signup(String email, firstname, middlename, lastname, age, phonenumber, password, line1, line2, city, state, postalCode, gender) async{
+  void signup(String email, String firstname, String middlename, String lastname, String age, String phonenumber, String password, String line1, String line2, String city, String state, String postalCode, String gender) async {
     setState(() {
       isLoading = true;
     });
 
-    try{
+    try {
       final formData = FormData.fromMap({
-          'email' : email,
-          'password' : password,
-          'firstName' : firstname,
-          'middleName' : middlename,
-          'lastName' : lastname,
-          'phone' : '+63$phonenumber',
-          'gender': gender,
-          'age' : age,
-          'line1' : line1,
-          'line2' : line2,
-          'city' : city,
-          'state' : state,
-          'postalCode' : postalCode
+        'email': email,
+        'password': password,
+        'firstName': firstname,
+        'middleName': middlename ?? '',
+        'lastName': lastname,
+        'phone': '+63$phonenumber',
+        'gender': gender,
+        'age': age,
+        'line1': line1,
+        'line2': line2,
+        'city': city,
+        'state': state,
+        'postalCode': postalCode
       });
       print(formData.fields);
 
       final response = await dio.post(
-        'https://sbit3j-service.onrender.com/v1/client/auth/register',
-        data: formData
+          'https://sbit3j-service.onrender.com/v1/client/auth/register',
+          data: formData
       );
 
-      if(response.statusCode == 201) {
+      if (response.statusCode == 201) {
         var data = response.data;
         logindata?.setBool('login', false);
         logindata?.setString('token', data['access']['token']);
         logindata?.setString('userId', data['data']['id'].toString());
         logindata?.setString('firstName', data['data']['firstName']);
-        logindata?.setString('middleName', data['data']['middleName']);
+        logindata?.setString('middleName', data['data']['middleName'] != null ? data['data']['middleName'].toString() : 'null');
         logindata?.setString('lastName', data['data']['lastName']);
         logindata?.setString('phone', data['data']['phone']);
         logindata?.setString('email', data['data']['email']);
-        logindata?.setString('line1', data['data']['line1']);
-        logindata?.setString('line2', data['data']['line2']);
-        logindata?.setString('city', data['data']['city']);
-        logindata?.setString('state', data['data']['state']);
-        logindata?.setString('postalCode', data['data']['postalCode']);
         logindata?.setString('gender', data['data']['gender']);
-        logindata?.setString('age', data['data']['age'].toString());
-        logindata?.setString('height', data['data']['height'] != null ? data['data']['height'].toString() : '0');
-        logindata?.setString('weight', data['data']['weight'] != null ? data['data']['weight'].toString() : '0');
-
 
         // ignore: use_build_context_synchronously
         context.read<User>().storeProfile(
@@ -114,17 +106,17 @@ class InitState extends State<SignUpScreen> {
           data['data']['weight'],
         );
 
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Registered Successfully")));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Registered Successfully")));
         // ignore: use_build_context_synchronously
-        Navigator.push(context, MaterialPageRoute(builder:(context) => const FormScreen()
-        ));
-      }else{
-      }
-    }catch(e){
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const FormScreen()));
+      } else {}
+    } catch (e) {
       print(e.toString());
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Invalid Credentials")));
-    }finally {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text(
+          "Invalid Credentials Check All Your Given Information")));
+    } finally {
       setState(() {
         isLoading = false;
       });
@@ -344,17 +336,31 @@ class InitState extends State<SignUpScreen> {
               alignment: Alignment.center,
               child: TextFormField(
                 controller: passwordController,
-                obscureText: true,
+                obscureText: !isPasswordVisible,
                 cursorColor: const Color(0xff004AAD),
-                decoration: const InputDecoration(
-                  icon: Icon(
+                decoration: InputDecoration(
+                  icon: const Icon(
                     Icons.vpn_key,
                     color: Color(0xff004AAD),
                   ),
                   hintText: "Enter Password",
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isPasswordVisible = !isPasswordVisible;
+                      });
+                    },
+                    icon: Icon(
+                      isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                      color: const Color(0xff004AAD),
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.only(top: 16, bottom: 16, right: 12),
                 ),
+                validator: (value) =>
+                value!.isEmpty ? "Password field required" : null,
               ),
             ),
 

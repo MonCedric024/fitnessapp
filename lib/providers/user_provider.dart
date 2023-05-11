@@ -35,13 +35,13 @@ class User with ChangeNotifier {
   int get height => _height;
   int get weight => _weight;
 
-  void storeProfile(String token, int id, String firstName, String middleName, String lastName, String phoneNumber, String email, String line1,
+  void storeProfile(String token, int id, String firstName, String? middleName, String lastName, String phoneNumber, String email, String line1,
       String line2, String city, String state, String postalCode, String gender, int age, int? weight, int? height) {
 
     _token = token;
     _id = id;
     _firstname = firstName;
-    _middlename = middleName;
+    _middlename = middleName ?? '';
     _lastname = lastName;
     _phonenumber = phoneNumber;
     _email = email;

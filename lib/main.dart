@@ -1,5 +1,4 @@
 import 'package:fitnessapp/providers/user_provider.dart';
-import 'package:fitnessapp/providers/workout_provider.dart';
 import 'package:fitnessapp/splash_screen.dart';
 import 'package:fitnessapp/bottomnavigation.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +12,7 @@ void main() {
         providers: [
           ChangeNotifierProvider(create: (_) => UserData()),
           ChangeNotifierProvider(create: (_) => User()),
-          ChangeNotifierProvider(create: (_) => WorkoutList()),
+
     ],
       child: const MyApp(),
     ),

@@ -26,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   SharedPreferences? logindata;
   late bool newUser;
 
+  @override
   void initState() {
     super.initState();
     SharedPreferences.getInstance().then((SharedPreferences prefs) {
@@ -58,19 +59,11 @@ class _LoginScreenState extends State<LoginScreen> {
         logindata?.setString('token', data['access']['token']);
         logindata?.setString('userId', data['data']['id'].toString());
         logindata?.setString('firstName', data['data']['firstName']);
-        logindata?.setString('middleName', data['data']['middleName']);
+        logindata?.setString('middleName', data['data']['middleName'] != null ? data['data']['middleName'].toString() : 'null');
         logindata?.setString('lastName', data['data']['lastName']);
         logindata?.setString('phone', data['data']['phone']);
         logindata?.setString('email', data['data']['email']);
-        logindata?.setString('line1', data['data']['line1']);
-        logindata?.setString('line2', data['data']['line2']);
-        logindata?.setString('city', data['data']['city']);
-        logindata?.setString('state', data['data']['state']);
-        logindata?.setString('postalCode', data['data']['postalCode']);
         logindata?.setString('gender', data['data']['gender']);
-        logindata?.setString('age', data['data']['age'].toString());
-        logindata?.setString('height', data['data']['height'] != null ? data['data']['height'].toString() : '0');
-        logindata?.setString('weight', data['data']['weight'] != null ? data['data']['weight'].toString() : '0');
 
         context.read<User>().storeProfile(
           data['access']['token'],

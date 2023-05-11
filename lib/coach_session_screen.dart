@@ -61,7 +61,11 @@ class _CoachSessionState extends State<CoachSession> {
           ? const Center(
         child: CircularProgressIndicator(),
       )
-          : SingleChildScrollView(
+          : sessionData!.isEmpty
+          ? const Center(
+        child: Text("No session available. Please wait to your coach to create..."),
+      )
+        : SingleChildScrollView(
         child: Column(
             children: [
               SizedBox(
