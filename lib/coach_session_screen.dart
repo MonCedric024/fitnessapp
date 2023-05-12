@@ -22,190 +22,351 @@ class _CoachSessionState extends State<CoachSession> {
   final dio = Dio();
   List<Map<String, dynamic>>? sessionData;
   SharedPreferences? logindata;
+  Map<String, dynamic>? coachData;
+
 
   @override
   void initState() {
     super.initState();
     Provider.of<UserData>(context, listen: false).fetchUserData();
+    fetchCoachData();
     fetchSessionData();
   }
 
-    void fetchSessionData() async {
-      try {
-        final token = Provider.of<UserData>(context, listen: false).token;
-        final response = await Dio().get(
-          'https://sbit3j-service.onrender.com/v1/client/sessions',
-          options: Options(headers: {
-            'Authorization': 'Bearer $token',
-          }),
-        );
-        if (response.statusCode == 200) {
-          final sessions = List<Map<String, dynamic>>.from(response.data['data']);
-          if (mounted) {
-            setState(() {
-              sessionData = sessions;
-            });
-          }
-        } else {
-          throw Exception('Failed to fetch data from API endpoint');
-        }
-      } catch (e) {
-        throw Exception('Failed to fetch data from API endpoint: $e');
+  void fetchSessionData() async {
+    try {
+      final token = Provider.of<UserData>(context, listen: false).token;
+      if (token == null) {
+        throw Exception('Token is null');
       }
+      final response = await Dio().get(
+        'https://sbit3j-service.onrender.com/v1/client/sessions',
+        options: Options(headers: {
+          'Authorization': 'Bearer $token',
+        }),
+      );
+      if (response.statusCode == 200) {
+        final sessions = List<Map<String, dynamic>>.from(response.data['data']);
+        if (mounted) {
+          setState(() {
+            sessionData = sessions;
+          });
+        }
+      } else {
+        throw Exception('Failed to fetch data from API endpoint');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch session data from API endpoint: $e');
     }
+  }
+
+  Future<void> fetchCoachData() async {
+    try {
+      final token = Provider.of<UserData>(context, listen: false).token;
+      if (token == null) {
+        throw Exception('Token is null');
+      }
+      final response = await Dio().get(
+        'https://sbit3j-service.onrender.com/v1/client/coachings',
+        options: Options(headers: {
+          'Authorization': 'Bearer $token',
+        }),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          coachData = response.data['data'][0]['coach'];
+        });
+      } else {
+        throw Exception('Failed to fetch data from API endpoint');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch coach data from API endpoint: $e');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: sessionData == null
-          ? const Center(
-        child: CircularProgressIndicator(),
-      )
-          : sessionData!.isEmpty
-          ? const Center(
-        child: Text("No session available. Please wait to your coach to create..."),
-      )
-        : SingleChildScrollView(
-        child: Column(
-            children: [
-              SizedBox(
-              height: MediaQuery.of(context).size.height * 0.01,
-            ),
-            ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: sessionData!.length,
-              itemBuilder: (BuildContext context, int index) {
-                final session = sessionData![index];
-                return Card(
-                  color: Colors.white,
-                  margin: const EdgeInsets.fromLTRB(16, 5, 16, 3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+      body: Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: coachData == null
+                      ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                      : FractionallySizedBox(
+                    widthFactor: 1,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Text(
-                          'Session Title:',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                        Container(
+                          margin: EdgeInsets.only(
+                            left: screenWidth * 0.04,
+                            right: screenWidth * 0.04,
+                            top: screenHeight * 0.01,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          session['title'],
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Session Description:',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          session['description'],
-                          textAlign: TextAlign.justify,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Calories:',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  session['calories'].toString(),
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ],
+                          height: screenHeight * 0.30,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                              bottomRight: Radius.circular(20),
+                              bottomLeft: Radius.circular(20),
+                              topLeft: Radius.circular(20),
+                              topRight: Radius.circular(20),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Proteins:',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  session['proteins'].toString(),
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ],
+                            color: Color(0xff004AAD),
+                            gradient: LinearGradient(
+                              colors: [Color(0xff004AAD), Color(0xff004AAD)],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Fats:',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  session['fats'].toString(),
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                          ),
+                          child: Stack(
                             children: [
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Flexible(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: ElevatedButton.icon(
+                              Positioned(
+                                left: MediaQuery.of(context).size.width * 0.03,
+                                bottom: MediaQuery.of(context).size.height * 0.02,
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width * 0.25,
+                                  height: MediaQuery.of(context).size.width * 0.25,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                    color: coachData!['gender'] == 'Male' ? Colors.blue : Colors.pink,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${coachData!['firstName']?.split('')[0] ?? ''}${coachData!['lastName']?.split('')[0] ?? ''}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 35,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(
+                                  left: screenWidth * 0.3,
+                                  bottom: screenHeight * 0.1,
+                                ),
+                                alignment: Alignment.bottomLeft,
+                                child: Text(
+                                  '${coachData!['firstName']} ${coachData!['lastName']}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(
+                                  left: screenWidth * 0.3,
+                                  bottom: screenHeight * 0.02,
+                                ),
+                                alignment: Alignment.bottomLeft,
+                                child: Text(
+                                  '${coachData!['phone']}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(
+                                  left: screenWidth * 0.3,
+                                  bottom: screenHeight * 0.06,
+                                ),
+                                alignment: Alignment.bottomLeft,
+                                child: Text(
+                                  '${coachData!['email']}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(left: 10, top: 50),
+                          alignment: Alignment.topLeft,
+                          child: const Text('Session Workouts',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 25,
+                                  color: Colors.black
+                              )
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+             Divider(
+            ),
+          Expanded(
+            child: sessionData == null
+                ? const Center(
+              child: CircularProgressIndicator(),
+            )
+                : sessionData!.isEmpty
+                ? const Center(
+              child: Text("No session available. Please wait to your coach to create..."),
+            )
+                : SingleChildScrollView(
+              child: Column(
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.01,
+                    ),
+                    ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: sessionData!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final session = sessionData![index];
+                        return Card(
+                          color: Colors.white,
+                          margin: const EdgeInsets.fromLTRB(16, 5, 16, 3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Session Title:',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  session['title'],
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                const Text(
+                                  'Session Description:',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  session['description'],
+                                  textAlign: TextAlign.justify,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Calories:',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          session['calories'].toString(),
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Proteins:',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          session['proteins'].toString(),
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Fats:',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          session['fats'].toString(),
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      const SizedBox(height: 30),
+                                      ElevatedButton.icon(
                                         onPressed: () {
                                           Navigator.push(
                                             context,
@@ -229,55 +390,23 @@ class _CoachSessionState extends State<CoachSession> {
                                             borderRadius: BorderRadius.circular(10),
                                           ),
                                           elevation: 0,
+                                          minimumSize: const Size(double.infinity, 40),
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 10),
-                                  Flexible(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: ElevatedButton.icon(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => CoachProfile(id: session['id']),
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.person, size: 30),
-                                        label: const Text(
-                                          'Coach Profile',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          primary: const Color(0xff22763F),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          elevation: 0,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
-            ),
-          ]
-        ),
+                  ]
+              ),
+            ), // second half of the screen widget
+          ),
+        ],
       ),
     );
   }
@@ -294,7 +423,7 @@ class AllWorkouts extends StatefulWidget {
 
 class _AllWorkoutsState extends State<AllWorkouts> {
   late Map<String, dynamic> session;
-  bool _showDialog = false;
+  final bool _showDialog = false;
 
   @override
   void initState() {
@@ -556,7 +685,7 @@ class _WorkoutDetailsState extends State<WorkoutDetails> {
                   ),
                   const SizedBox(width: 4.0),
                   Text(
-                    '${widget.workout['time']} time',
+                    '${widget.workout['time']} seconds',
                     style: const TextStyle(
                       fontSize: 16.0,
                       color: Colors.grey,
@@ -699,177 +828,6 @@ class _WorkoutDetailsState extends State<WorkoutDetails> {
               )
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class CoachProfile extends StatefulWidget {
-  final int id;
-  const CoachProfile({Key? key, required this.id}) : super(key: key);
-
-  @override
-  _CoachProfileState createState() => _CoachProfileState();
-}
-
-class _CoachProfileState extends State<CoachProfile> {
-  Map<String, dynamic>? coachData;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCoachData();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    // Cancel any timers or animations here, if applicable
-  }
-
-  Future<void> fetchCoachData() async {
-    try {
-      String? token = Provider.of<UserData>(context, listen: false).token;
-      final response = await Dio().get(
-        'https://sbit3j-service.onrender.com/v1/client/sessions/${widget.id}',
-        options: Options(headers: {
-          'Authorization': 'Bearer $token',
-        }),
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          coachData = response.data['data']['coach'];
-        });
-      } else {
-        throw Exception('Failed to fetch data from API endpoint');
-      }
-
-    } catch (e) {
-      throw Exception('Failed to fetch data from API endpoint: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Coach Profile'),
-        backgroundColor: const Color(0xff004AAD),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: coachData == null
-          ? const Center(
-        child: CircularProgressIndicator(),
-      )
-          : FractionallySizedBox(
-        widthFactor: 1,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              margin: EdgeInsets.only(
-                left: screenWidth * 0.05,
-                right: screenWidth * 0.05,
-                top: screenHeight * 0.02,
-              ),
-              height: screenHeight * 0.30,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(20),
-                  bottomLeft: Radius.circular(20),
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-                color: Color(0xff004AAD),
-                gradient: LinearGradient(
-                  colors: [Color(0xff004AAD), Color(0xff004AAD)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: MediaQuery.of(context).size.width * 0.03,
-                    bottom: MediaQuery.of(context).size.height * 0.02,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.25,
-                      height: MediaQuery.of(context).size.width * 0.25,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 2,
-                        ),
-                        color: coachData!['gender'] == 'Male' ? Colors.blue : Colors.pink,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${coachData!['firstName']?.split('')[0] ?? ''}${coachData!['lastName']?.split('')[0] ?? ''}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 35,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(
-                      left: screenWidth * 0.3,
-                      bottom: screenHeight * 0.1,
-                    ),
-                    alignment: Alignment.bottomLeft,
-                    child: Text(
-                      '${coachData!['firstName']} ${coachData!['lastName']}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(
-                      left: screenWidth * 0.3,
-                      bottom: screenHeight * 0.06,
-                    ),
-                    alignment: Alignment.bottomLeft,
-                    child: Text(
-                      '${coachData!['email']}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(
-                      left: screenWidth * 0.3,
-                      bottom: screenHeight * 0.02,
-                    ),
-                    alignment: Alignment.bottomLeft,
-                    child: Text(
-                      '${coachData!['phone']}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );

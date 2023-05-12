@@ -14,7 +14,7 @@ class FormScreen extends StatefulWidget {
 
 const List<String> list = <String>['Beginner', 'Intermediate', 'Advanced'];
 const List<String> lists = <String>['Male', 'Female'];
-const List<String> listss = <String>['Core', 'Lower Body', 'Upper Body'];
+const List<String> listss = <String>['Core', 'Lower Body', 'Upper'];
 
 class _FormScreenState extends State<FormScreen> {
   bool coaching = true;
@@ -83,6 +83,7 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+
   Future<bool> _onWillPop() async {
     return false;
   }
@@ -117,7 +118,7 @@ class _FormScreenState extends State<FormScreen> {
                         controller: weightController,
                         cursorColor: const Color(0xff004AAD),
                         decoration: const InputDecoration(
-                          hintText: "Enter Weight",
+                          hintText: "Enter Weight (kg)",
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
                         ),
@@ -137,7 +138,7 @@ class _FormScreenState extends State<FormScreen> {
                         controller: heightController,
                         cursorColor: const Color(0xff004AAD),
                         decoration: const InputDecoration(
-                          hintText: "Enter Height",
+                          hintText: "Enter Height (cm)",
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
                         ),
@@ -181,19 +182,10 @@ class _FormScreenState extends State<FormScreen> {
                             underline: const SizedBox(),
                             onChanged: (bool? newValue) {
                               setState(() {
-                                coaching = newValue!;
+                                coaching = newValue ?? false; // Use null-aware operator to set the value to false if newValue is null.
                               });
                             },
-                            items: const [
-                              DropdownMenuItem<bool>(
-                                value: true,
-                                child: Text('Yes'),
-                              ),
-                              DropdownMenuItem<bool>(
-                                value: false,
-                                child: Text('No'),
-                              ),
-                            ],
+                            items: const [    DropdownMenuItem<bool>(      value: true,      child: Text('Yes'),    ),    DropdownMenuItem<bool>(      value: false,      child: Text('No'),    ),  ],
                           ),
                         ),
                       ],

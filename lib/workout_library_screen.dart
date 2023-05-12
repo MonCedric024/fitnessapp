@@ -312,7 +312,7 @@ class DetailPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 4.0),
                   Text(
-                    '${data.time} time',
+                    '${data.time} seconds',
                     style: const TextStyle(
                       fontSize: 16.0,
                       color: Colors.grey,

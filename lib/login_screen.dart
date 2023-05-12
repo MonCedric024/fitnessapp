@@ -285,8 +285,9 @@ class _LoginScreenState extends State<LoginScreen> {
     newUser = (logindata!.getBool('login') ?? true)!;
 
     if (newUser == false) {
+      // ignore: use_build_context_synchronously
       Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => const NavigationPage()),
+        context, MaterialPageRoute(builder: (context) => const Subscription()),
       );
     }
   }
