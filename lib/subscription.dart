@@ -27,8 +27,9 @@ class _SubscriptionState extends State<Subscription> {
   }
 
   final dio = Dio();
+
   void loadsubscription() async {
-    final token = Provider.of<UserData>(context, listen: false).token;
+    final token = Provider.of<User>(context, listen: false).token;
     try {
       var response = await dio.get(
         'https://sbit3j-service.onrender.com/v1/client/subscriptions/current',
@@ -49,16 +50,13 @@ class _SubscriptionState extends State<Subscription> {
         }
       } else {
         print("response: $response");
-        final token = Provider.of<UserData>(context, listen: false).token;
         await launch('https://thegymstreet-payments.vercel.app/login?token=$token');
       }
     } catch (e) {
       print("error: ${e.toString()}");
-      final token = Provider.of<UserData>(context, listen: false).token;
       await launch('https://thegymstreet-payments.vercel.app/login?token=$token');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

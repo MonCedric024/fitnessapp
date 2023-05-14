@@ -130,7 +130,7 @@ class _CoachSessionState extends State<CoachSession> {
                             children: [
                               Positioned(
                                 left: MediaQuery.of(context).size.width * 0.03,
-                                bottom: MediaQuery.of(context).size.height * 0.02,
+                                bottom: MediaQuery.of(context).size.height * 0.04,
                                 child: Container(
                                   width: MediaQuery.of(context).size.width * 0.25,
                                   height: MediaQuery.of(context).size.width * 0.25,
@@ -156,7 +156,7 @@ class _CoachSessionState extends State<CoachSession> {
                               ),
                               Container(
                                 margin: EdgeInsets.only(
-                                  left: screenWidth * 0.3,
+                                  left: screenWidth * 0.31,
                                   bottom: screenHeight * 0.1,
                                 ),
                                 alignment: Alignment.bottomLeft,
@@ -171,8 +171,8 @@ class _CoachSessionState extends State<CoachSession> {
                               ),
                               Container(
                                 margin: EdgeInsets.only(
-                                  left: screenWidth * 0.3,
-                                  bottom: screenHeight * 0.02,
+                                  left: screenWidth * 0.31,
+                                  bottom: screenHeight * 0.06,
                                 ),
                                 alignment: Alignment.bottomLeft,
                                 child: Text(
@@ -186,8 +186,8 @@ class _CoachSessionState extends State<CoachSession> {
                               ),
                               Container(
                                 margin: EdgeInsets.only(
-                                  left: screenWidth * 0.3,
-                                  bottom: screenHeight * 0.06,
+                                  left: screenWidth * 0.31,
+                                  bottom: screenHeight * 0.03,
                                 ),
                                 alignment: Alignment.bottomLeft,
                                 child: Text(
